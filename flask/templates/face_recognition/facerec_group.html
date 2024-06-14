@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Face Recognition | STTB</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Display flash messages in a modal -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div class="modal fade" id="notificationModal">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-body">
+                            {% for message in messages %}
+                                <p>{{ message }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    autoHideModal();
+                });
+            </script>
+        {% endif %}
+    {% endwith %}
+
+    <div class="box_padding">
+        <div>
+            <h3 class="center_all" style="padding-top: 20px;">Presensi Face Recognition</h3>
+        </div>
+        <div class="row">
+            <div class="col-lg-8">
+                <div class="center_all">
+                    <img class="rounded video_stream" src="{{ url_for('video_feed') }}" alt="Camera Error">
+                </div>
+            </div>
+            <div class="col-lg-3 center_all">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Predictions</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 id="datetime"></h6>
+                        <h6>Nama :</h6>
+                        <h6 id="name_">-</h6>
+                        <!-- <h6>Loc :</h6>
+                        <h6 id="coordinate_">-</h6> -->
+                    </div>
+                    <div class="card-footer">
+                        <h6>Data Terakhir</h6>
+                        <div class="table-responsive">
+                            <table class="table table-borderless">
+                                <thead>
+                                    <tr>
+                                        <th style="font-size: small;">Nama</th>
+                                        <th style="font-size: small;">Waktu</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in data_csv %}
+                                    <tr>
+                                        <td><p style="font-size: 10px;">{{ row[0] }}</p></td>
+                                        <td><p style="font-size: 10px;">{{ row[1] }}</p></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <form id="form_submit" action="{{ url_for('group_submit_facerec') }}" method="post">
+                    <input type="hidden" id="name_input" name="name_input" value=""> 
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.5.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+
+<script language="javascript">
+    function updateName() {
+        var name_ = document.getElementById('name_');
+        var originalText = name_.textContent;
+        setInterval(function() {
+            if (name_.textContent != originalText) {
+                //console.log(name_.textContent);
+                originalText = name_.textContent;
+            }
+        }, 500);
+    }
+    updateName();
+
+    function updateDateTime() {
+        var now = new Date();
+        var days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        var day = days[now.getDay()];
+        var date = now.getDate().toString().padStart(2, '0');
+        var month = (now.getMonth() + 1).toString().padStart(2, '0'); // Bulan dimulai dari 0
+        var year = now.getFullYear();
+        var hours = now.getHours().toString().padStart(2, '0');
+        var minutes = now.getMinutes().toString().padStart(2, '0');
+        var seconds = now.getSeconds().toString().padStart(2, '0');
+
+        var currentDate = day + ', ' + date + '/' + month + '/' + year;
+        var currentTime = hours + ':' + minutes + ':' + seconds;
+
+        document.getElementById('datetime').innerText = currentDate + ' ' + currentTime;
+    }
+
+    function startDateTime() {
+        updateDateTime(); // Panggil pertama kali untuk menampilkan waktu langsung
+        setInterval(updateDateTime, 1000); // Perbarui waktu setiap detik
+    }
+    window.onload = startDateTime;
+
+    // Function to hide the modal automatically after a few seconds
+    function autoHideModal() {
+        var modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+        modal.show();
+        setTimeout(function() {
+            modal.hide();
+        }, 3000); // Hide after 3 seconds
+    }
+
+    async function updatePredictions() {
+        try {
+            const response = await fetch('/group_pred');
+            const data = await response.json();
+            
+            // Display names
+            document.getElementById('name_').innerHTML = data.names.join(', ');
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updatePredictions);
+
+    let lastName = "{{ last_index }}";
+    /**
+     * Function to check the condition and submit the form
+     * Submits the form if the name element is not empty, not one of the invalid names,
+     * and the current name is different from the previous name
+     */
+    function submitForm() {
+        // Get the name element
+        const nameElement = document.getElementById('name_');
+        
+        // Get the current name
+        const currentName = nameElement.textContent;
+        
+        // Define the list of invalid names
+        const invalidNames = ["Tidak Dikenali", "Tidak Terdeteksi", "-", " ", ""];
+        
+        // Check if the name element is not empty, not one of the invalid names,
+        // and the current name is different from the previous name
+        if (currentName && !invalidNames.includes(currentName) && currentName !== lastName) {
+            document.getElementById('name_input').value = currentName;
+            
+            // Submit the form
+            document.getElementById('form_submit').submit();
+            
+            // Update the previous name
+            lastName = currentName;
+        }
+    }
+
+    // Set interval to check the condition and submit the form every 1 second
+    setInterval(submitForm, 2000);
+
+    // Function to refresh the page every 60 seconds
+    function autoRefresh() {
+        location.reload();
+    }
+
+    // Call autoRefresh every 60 seconds
+    setInterval(autoRefresh, 60000);
+
+    // Call updatePredictions every second
+    setInterval(updatePredictions, 500);
+</script>
