@@ -1,6 +1,7 @@
 import cv2
 import pickle
 from PIL import Image, ImageDraw, ImageFont
+import face_recognition_models
 import face_recognition
 import numpy as np
 import time
