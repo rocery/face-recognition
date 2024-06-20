@@ -23,9 +23,13 @@ if not os.path.exists(CSV_FILE_PATH_GROUP):
     with open(CSV_FILE_PATH_GROUP, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerow(['Names', 'Time'])
+        
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/face_recognition')
-def index():
+def face_recognition():
     return render_template('face_recognition/index.html')
 
 @app.route('/face_recognition/facerec')
