@@ -16,6 +16,6 @@ cmake
 dlib
 face_recognition
 
-if lmdb can't inslled in windows python 3.12 try use this repo
+if lmdb can't installed in windows os use python > 3.12 try use this repo
 https://github.com/Bye-lemon/py-lmdb/tree/master
 and use pip install .
