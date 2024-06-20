@@ -28,6 +28,14 @@ if not os.path.exists(CSV_FILE_PATH_GROUP):
 def index():
     return render_template('index.html')
 
+@app.route('/ocr')
+def ocr():
+    return render_template('ocr/index.html')
+
+@app.route('/ocr/plat_number')
+def plat_number():
+    return render_template('ocr/index.html')
+
 @app.route('/face_recognition')
 def face_recognition():
     return render_template('face_recognition/index.html')
