@@ -1,8 +1,6 @@
- 
+Please make your own venv, 
 
-Make your own venv, can't push, to many large files
-
-in ubuntu update lib using this:
+in ubuntu update or isntall lib using this command:
 pip install --break-system-packages --user <package name>
 
 Future Project:
@@ -19,5 +17,4 @@ face_recognition
 if lmdb can't installed in windows os use python > 3.12 try use this repo
 git clone https://github.com/Bye-lemon/py-lmdb/tree/master
 cd py-lmdb 
-
 use pip install .
