@@ -1,26 +1,43 @@
-import pymysql
+import mysql.connector
+
+rows = []
 
 # Replace with your MySQL database connection details
-db = pymysql.connect(host='192.168.10.223', user='admin', password='itbekasioke', database='counter_hit')
+config = {
+    'user': 'admin',
+    'password': 'itbekasioke',
+    'host': '192.168.10.223',
+    'database': 'counter_hit',
+    'raise_on_warnings': True
+}
 
 try:
-    # Create a cursor object using cursor() method
-    cursor = db.cursor()
+    # Establish connection to MySQL server
+    cnx = mysql.connector.connect(**config)
 
-    # Execute a SQL query
-    cursor.execute("SELECT * FROM counter_hit WHERE id = 1")
+    # Create cursor object
+    cursor = cnx.cursor()
 
-    # Fetch all rows from the result set
+    # Example complex SQL query with multiple WHERE conditions
+    query = (
+        "SELECT id_packing, jenis_packing, id_bagian "
+        "FROM jenis_packing "
+        "WHERE id_bagian > 3"
+    )
+
+    # Execute SQL query
+    cursor.execute(query)
+
+    # Fetch all rows from the result set into a list
     rows = cursor.fetchall()
-    for row in rows:
-        print(row)
 
-except pymysql.Error as e:
-    print(f"Error {e}")
+    # Close cursor and database connection
+    cursor.close()
+    cnx.close()
 
-finally:
-    # Close the cursor and database connection
-    if 'cursor' in locals():
-        cursor.close()
-    if db.open:
-        db.close()
+except mysql.connector.Error as err:
+    print(f"Error: {err}")
+
+# Process each row (printing after connection is closed)
+for row in rows:
+    print(row[0])
