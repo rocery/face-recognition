@@ -1,4 +1,4 @@
-from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, flash, stream_with_context
+from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, flash
 from predict import predict, show_labels_on_image
 from read_data import *
 import cv2
