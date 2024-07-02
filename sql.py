@@ -1,6 +1,6 @@
 import mysql.connector
 
-rows = []
+rows = None
 
 # Replace with your MySQL database connection details
 config = {
