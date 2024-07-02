@@ -2,7 +2,6 @@ anyio==4.4.0
 astor==0.8.1
 asttokens==2.4.1
 attrdict==2.0.1
-Babel==2.15.0
 bce-python-sdk==0.9.14
 beautifulsoup4==4.12.3
 blinker==1.8.2

@@ -7,7 +7,7 @@ from sklearn import neighbors
 import pickle
 
 train_folder = "encoding/train"
-model_save_path = "trained_knn_model.clf"
+model_save_path = "trained_knn_model_rasp.clf"
 n_neighbors_value = 3
 
 def train():

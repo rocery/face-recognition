@@ -2,7 +2,7 @@ import pickle
 import face_recognition
 import cv2
 
-model_save_path = "trained_knn_model.clf"
+model_save_path = "trained_knn_model_rasp.clf"
 distance_threshold = 0.5
 n_neighbors_value = 3
 image = "a.png"
