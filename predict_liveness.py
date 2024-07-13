@@ -1,14 +1,13 @@
 import cv2
 import pickle
 from PIL import Image, ImageDraw, ImageFont
-import face_recognition_models
 import face_recognition
 import numpy as np
 import time
 
 def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     """
-    Recognizes faces in given image using a trained KNN classifier
+    Recognizes faces in given image using a trained KNN classifier and checks for liveness.
 
     :param X_frame: frame to do the prediction on.
     :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
@@ -42,15 +41,30 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     # Cari wajah yang terdekat
     are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
 
-    # Return hasil dari algoritma KNN
-    return [(pred, loc) if rec else ("Tidak Dikenali", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
+    predictions = []
+    for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches):
+        if rec and is_live_face(X_frame, loc):
+            predictions.append((pred, loc))
+        else:
+            predictions.append(("Tidak Dikenali", loc))
+    
+    return predictions
 
+def is_live_face(frame, face_location):
+    top, right, bottom, left = face_location
+    face_region = frame[top:bottom, left:right]
+    
+    # Convert to grayscale
+    gray_face = cv2.cvtColor(face_region, cv2.COLOR_BGR2GRAY)
+    
+    # Apply Laplacian to detect edges and calculate variance
+    laplacian_var = cv2.Laplacian(gray_face, cv2.CV_64F).var()
+    
+    # Threshold for variance; you may need to tune this value
+    return laplacian_var > 100  # High variance suggests a live face
 
 def show_labels_on_image(frame, predictions):
-    # for name, (top, right, bottom, left) in predictions:
-    #     print("Prediction: {}, Top: {}, Right: {}, Bottom: {}, Left: {}".format(name, top, right, bottom, left))
-    
-    # height_frame, width_frame, _ = frame.shape
+    height_frame, width_frame, _ = frame.shape
 
     # Draw a box around the face using the Pillow module
     pil_image = Image.fromarray(frame)
@@ -70,15 +84,13 @@ def show_labels_on_image(frame, predictions):
         # Draw a solid rectangle below the rectangle, fill it with name
         draw.rectangle(((left, top - 20), (right, top)), fill=(0, 0, 255), outline=(0, 0, 255))
         draw.text((left + 5, top - 15), name, fill=(255, 255, 255), font=font)
-
-        # draw.text((10, height_frame - 20), name, fill=(255, 255, 255), font=font)
         
     # Remove the drawing library from memory as per the Pillow docs.
     del draw
 
     opencvimage = np.array(pil_image)
     return opencvimage
-            
+
 if __name__ == "__main__":
     process_this_frame = 39
     print('Setting cameras up...')
