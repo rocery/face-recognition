@@ -4,6 +4,14 @@ from PIL import Image, ImageDraw, ImageFont
 import face_recognition
 import numpy as np
 import time
+import os
+import argparse
+import warnings
+
+from Silent_Face_Anti_Spoofing.src.anti_spoof_predict import AntiSpoofPredict
+from Silent_Face_Anti_Spoofing.src.generate_patches import CropImage
+from Silent_Face_Anti_Spoofing.src.utility import parse_model_name
+warnings.filterwarnings('ignore')
 
 def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     """
@@ -19,7 +27,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     """
     if knn_clf is None and model_path is None:
         raise Exception("File Encoding Tidak Ditemukan")
-
+    
     # Muat model yang sudah ditrain
     if knn_clf is None:
         with open(model_path, 'rb') as f:
@@ -31,6 +39,10 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     # Jika tidak ada wajah yang terdeteksi, reutn nilai kosong
     if len(X_face_locations) == 0:
         return []
+    
+    # Check Liveness
+    if liveness_check(X_frame)[0] == False:
+        return ["Tidak Valid", X_face_locations]
 
     # Menentukan encoding dari wajah yang terdeteksi
     faces_encodings = face_recognition.face_encodings(X_frame, known_face_locations=X_face_locations)
@@ -39,29 +51,65 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     # Perhatikan penggunaan linai n_neighbors, sesuaikan dengan nilai pada saat train model
     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=3)
     # Cari wajah yang terdekat
+    # Gunakan algoritma KNN untuk menemukan wajah terdekat/termirip
+    # Perhatikan penggunaan linai n_neighbors, sesuaikan dengan nilai pada saat train model
+    closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=3)
+    # Cari wajah yang terdekat
     are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
 
-    predictions = []
-    for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches):
-        if rec and is_live_face(X_frame, loc):
-            predictions.append((pred, loc))
-        else:
-            predictions.append(("Tidak Dikenali", loc))
-    
-    return predictions
+    # Return hasil dari algoritma KNN
+    return [(pred, loc) if rec else ("Tidak Dikenali", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
 
-def is_live_face(frame, face_location):
-    top, right, bottom, left = face_location
-    face_region = frame[top:bottom, left:right]
+def liveness_check(frame):
     
-    # Convert to grayscale
-    gray_face = cv2.cvtColor(face_region, cv2.COLOR_BGR2GRAY)
+    desc = "test"
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument(
+        "--device_id",
+        type=int,
+        default=0,
+        help="which gpu id, [0/1/2/3]")
+    parser.add_argument(
+        "--model_dir",
+        type=str,
+        default="./resources/anti_spoof_models",
+        help="model_lib used to test")
+    parser.add_argument(
+        "--image_name",
+        type=str,
+        default=frame,
+        help="image used to test")
+    args = parser.parse_args()
     
-    # Apply Laplacian to detect edges and calculate variance
-    laplacian_var = cv2.Laplacian(gray_face, cv2.CV_64F).var()
+    model_test = AntiSpoofPredict(args.device_id)
+    image_cropper = CropImage()
+    image = cv2.imread(args.image_name)
     
-    # Threshold for variance; you may need to tune this value
-    return laplacian_var > 100  # High variance suggests a live face
+    image_bbox = model_test.get_bbox(image)
+    prediction = np.zeros((1, 3))
+    
+    for model_name in os.listdir(args.model_dir):
+        h_input, w_input, model_type, scale = parse_model_name(model_name)
+        param = {
+            "org_img": image,
+            "bbox": image_bbox,
+            "scale": scale,
+            "out_w": w_input,
+            "out_h": h_input,
+            "crop": True,
+        }
+        if scale is None:
+            param["crop"] = False
+        img = image_cropper.crop(**param)
+        prediction += model_test.predict(img, os.path.join(args.model_dir, model_name))
+    
+    label = np.argmax(prediction)
+    value = prediction[0][label]/2
+    
+    if label == 1:
+        return [True, value, label]
+    else:
+        return [False, value, label]
 
 def show_labels_on_image(frame, predictions):
     height_frame, width_frame, _ = frame.shape
@@ -103,7 +151,7 @@ if __name__ == "__main__":
         if ret:
             img = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
             process_this_frame = process_this_frame + 1
-            if process_this_frame % 40 == 0:
+            if process_this_frame % 40 == 0 & liveness_check(frame):
                 predictions = predict(img, model_path="trained_knn_model.clf")
             frame = show_labels_on_image(frame, predictions)
             cv2.imshow('Face Recognition', frame)

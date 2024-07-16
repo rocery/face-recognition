@@ -14,7 +14,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
     :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
     :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
-           of mis-classifying an unknown person as a known one.
+    of mis-classifying an unknown person as a known one.
     :return: a list of names and face locations for the recognized faces in the image: [(name, bounding box), ...].
         For faces of unrecognized persons, the name 'unknown' will be returned.
     """

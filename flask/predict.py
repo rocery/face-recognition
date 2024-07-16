@@ -45,6 +45,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     # Return hasil dari algoritma KNN
     return [(pred, loc) if rec else ("Tidak Dikenali", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
 
+def liveness_check(frame):
 
 def show_labels_on_image(frame, predictions):
     # for name, (top, right, bottom, left) in predictions:
@@ -78,7 +79,7 @@ def show_labels_on_image(frame, predictions):
 
     opencvimage = np.array(pil_image)
     return opencvimage
-            
+
 # # url = 'http://192.168.15.180:4747/video'
 # cap = cv2.VideoCapture(0)
 # def generate_frames():
@@ -95,7 +96,7 @@ def show_labels_on_image(frame, predictions):
 #             if process_this_frame % 40 == 0:
 #                 predictions = predict(img, model_path="static/trained_knn_model.clf")
 #             frame = show_labels_on_image(frame, predictions)
-            
+
 #             ret, buffer = cv2.imencode('.jpg', frame)
 #             frame = buffer.tobytes()
 
