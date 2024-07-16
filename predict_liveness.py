@@ -91,6 +91,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
 
     # Cari lokasi dari wajah yang terdeteksi
     X_face_locations = face_recognition.face_locations(X_frame)
+    print("Loc: {}".format(X_face_locations))
 
     # Jika tidak ada wajah yang terdeteksi, reutn nilai kosong
     if len(X_face_locations) == 0:
@@ -98,6 +99,10 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     
     # if len(X_face_locations) > 1:
     #     return [("Terdeteksi Lebih dari Satu Wajah", X_face_locations[0], 1, 1)]
+    
+    # for faces in X_face_locations:
+    #     for face_data in faces:
+            
     
     # Check Liveness
     liveness = liveness_check(X_frame)
@@ -110,7 +115,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
 
     # Menentukan encoding dari wajah yang terdeteksi
     faces_encodings = face_recognition.face_encodings(X_frame, known_face_locations=X_face_locations)
-
+    print(len(faces_encodings))
     # Gunakan algoritma KNN untuk menemukan wajah terdekat/termirip
     # Perhatikan penggunaan linai n_neighbors, sesuaikan dengan nilai pada saat train model
     closest_distances = knn_clf.kneighbors(faces_encodings, n_neighbors=3)
@@ -128,8 +133,10 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches):
         if rec and liveness_status == True:
             predictions.append((pred, loc, liveness_value, liveness_label))
+            print("True: {}".format(predictions))
         else:
             predictions.append(("Tidak Dikenali", loc, liveness_value, liveness_label))
+            print("False: {}".format(predictions))
     
     return predictions
 
@@ -138,7 +145,7 @@ def show_labels_on_image(frame, predictions):
     pil_image = Image.fromarray(frame)
     draw = ImageDraw.Draw(pil_image)
     font = ImageFont.truetype("Ubuntu.ttf", 14)
-    print(predictions)
+    # print(predictions)
 
     time_str = time.strftime("%A, %d-%m-%Y %H:%M:%S", time.localtime())
     draw.text((10, 5), time_str, fill=(0, 0, 0), font=font)
@@ -151,7 +158,7 @@ def show_labels_on_image(frame, predictions):
         
         fig_label = "{}, Value: {:.2f}".format(name, value)
         
-        if label == 1:
+        if name == "Tidak Dikenali":
             fig_outline = (0, 200, 0)
         else:
             fig_outline = (0, 0, 200)
