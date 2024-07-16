@@ -21,7 +21,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
     :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
     :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
-           of mis-classifying an unknown person as a known one.
+    of mis-classifying an unknown person as a known one.
     :return: a list of names and face locations for the recognized faces in the image: [(name, bounding box), ...].
         For faces of unrecognized persons, the name 'unknown' will be returned.
     """
@@ -41,8 +41,13 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
         return []
     
     # Check Liveness
-    if liveness_check(X_frame)[0] == False:
-        return ["Tidak Valid", X_face_locations]
+    liveness_check = liveness_check(X_frame)
+    liveness_status = liveness_check[0]
+    liveness_value = liveness_check[1]
+    liveness_label = liveness_check[2]
+    
+    if liveness_status == False:
+        return ["Terdeteksi Palsu", X_face_locations, liveness_value, liveness_label]
 
     # Menentukan encoding dari wajah yang terdeteksi
     faces_encodings = face_recognition.face_encodings(X_frame, known_face_locations=X_face_locations)
@@ -58,7 +63,7 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(X_face_locations))]
 
     # Return hasil dari algoritma KNN
-    return [(pred, loc) if rec else ("Tidak Dikenali", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
+    return [(pred, loc, val, lab) if rec else ("Tidak Dikenali", loc, val, lab) for pred, loc, val, lab, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, liveness_value, liveness_label, are_matches)]
 
 def liveness_check(frame):
     
@@ -112,8 +117,6 @@ def liveness_check(frame):
         return [False, value, label]
 
 def show_labels_on_image(frame, predictions):
-    height_frame, width_frame, _ = frame.shape
-
     # Draw a box around the face using the Pillow module
     pil_image = Image.fromarray(frame)
     draw = ImageDraw.Draw(pil_image)
@@ -122,16 +125,24 @@ def show_labels_on_image(frame, predictions):
     time_str = time.strftime("%A, %d-%m-%Y %H:%M:%S", time.localtime())
     draw.text((10, 5), time_str, fill=(0, 0, 0), font=font)
     
-    for name, (top, right, bottom, left) in predictions:
+    for name, (top, right, bottom, left), value, label in predictions:
         top *= 2
         right *= 2
         bottom *= 2
         left *= 2
-        draw.rectangle(((left, top), (right, bottom)), outline=(0, 0, 255), width = 3)
+        
+        fig_label = "{}, Value: {:.2f}".format(name, value)
+        
+        if label == 1:
+            fig_outline = (0, 255, 0)
+        else:
+            fig_outline = (0, 0, 255)
+            
+        draw.rectangle(((left, top), (right, bottom)), outline = fig_outline, width = 3)
         
         # Draw a solid rectangle below the rectangle, fill it with name
-        draw.rectangle(((left, top - 20), (right, top)), fill=(0, 0, 255), outline=(0, 0, 255))
-        draw.text((left + 5, top - 15), name, fill=(255, 255, 255), font=font)
+        draw.rectangle(((left, top - 20), (right, top)), fill = fig_outline, outline=(0, 0, 255))
+        draw.text((left + 5, top - 15), fig_label, fill=(255, 255, 255), font=font)
         
     # Remove the drawing library from memory as per the Pillow docs.
     del draw
