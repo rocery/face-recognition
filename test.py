@@ -174,7 +174,7 @@ def show_labels_on_image(frame, predictions):
         bottom *= 2
         left *= 2
         
-        
+        #
         
         if label == 1:
             fig_outline = (0, 200, 0)
