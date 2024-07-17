@@ -162,7 +162,7 @@ def show_labels_on_image(frame, predictions):
     # Draw a box around the face using the Pillow module
     pil_image = Image.fromarray(frame)
     draw = ImageDraw.Draw(pil_image)
-    font = ImageFont.truetype("Ubuntu.ttf", 14)
+    font = ImageFont.truetype("Ubuntu.ttf", 16)
     # print(predictions)
 
     time_str = time.strftime("%A, %d-%m-%Y %H:%M:%S", time.localtime())
