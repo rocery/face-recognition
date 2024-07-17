@@ -110,7 +110,7 @@ def show_labels_on_image(frame, predictions):
     print(predictions)
     
     time_str = time.strftime("%A, %d-%m-%Y %H:%M:%S", time.localtime())
-    draw.text((10, 5), time_str, fill=(0, 0, 0), font = font)
+    draw.text((10, 5), time_str, fill = (0, 0, 0), font = font)
     
     for name, (top, right, bottom, left), label, value in predictions:
         top *= 2
@@ -145,7 +145,7 @@ if __name__ == "__main__":
     while 1 > 0:
         ret, frame = cap.read()
         if ret:
-            img = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+            img = cv2.resize(frame, (0, 0), fx = 0.5, fy = 0.5)
             process_this_frame = process_this_frame + 1
             if process_this_frame % 40 == 0:
                 predictions = predict(img, model_path="trained_knn_model.clf")
