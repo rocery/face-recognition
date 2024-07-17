@@ -95,6 +95,8 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     for pred, loc, rec, label, value in zip(knn_clf.predict(face_encodings), X_face_locations, are_matches, X_label, X_value):
         if rec and label == 1:
             predictions.append((pred, loc, label, value))
+        elif rec == False and label == 1 or label == 2:
+            predictions.append(("Palsu", loc, label, value))
         elif rec and label == 1 or label == 2:
             pred_ = "{}, Palsu".format(pred)
             predictions.append(("Palsu", loc, label, value))
