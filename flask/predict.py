@@ -45,7 +45,6 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
     # Return hasil dari algoritma KNN
     return [(pred, loc) if rec else ("Tidak Dikenali", loc) for pred, loc, rec in zip(knn_clf.predict(faces_encodings), X_face_locations, are_matches)]
 
-def liveness_check(frame):
 
 def show_labels_on_image(frame, predictions):
     # for name, (top, right, bottom, left) in predictions:
