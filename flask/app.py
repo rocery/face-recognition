@@ -144,5 +144,5 @@ def group_pred():
     return jsonify({'names': names})
 
 if __name__ == '__main__':
-    # if debug True, camera only run once then blank
+    # if debug True, camera only run once then blank or in another word: Error
     app.run(host='0.0.0.0', port=5000, threaded=True)
