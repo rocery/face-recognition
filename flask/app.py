@@ -1,5 +1,5 @@
 from flask import Flask, render_template, Response, jsonify, request, redirect, url_for, flash
-from predict import predict, show_labels_on_image
+from facerec_solo import predict, show_labels_on_image
 from read_data import *
 import cv2
 import csv
@@ -62,7 +62,7 @@ def submit_facerec():
         name_input = request.form.get('name_input')
         time_str = time.strftime("%d-%m-%Y %H:%M:%S", time.localtime())
         
-        if name_input in ['-', '', 'Tidak Dikenali', 'Tidak Terdeteksi']:
+        if name_input in ['-', '', 'Tidak Dikenali', 'Tidak Terdeteksi', 'Palsu', 'Terdeteksi Lebih dari Satu Wajah']:
             flash(f"Data terdeteksi salah, silahkan ulangi proses Face Recognition. Nama: {name_input}")
             return redirect(url_for('facerec'))           
         else:
@@ -127,7 +127,7 @@ def video_feed():
 def pred():
     # Initialize name_ outside the loop
     name_ = None
-    for name, _ in predictions:
+    for name, _, _, _ in predictions:
         if name is None:
             name_ = "Tidak Terdeteksi"
         else:
@@ -145,5 +145,4 @@ def group_pred():
 
 if __name__ == '__main__':
     # if debug True, camera only run once then blank
-    app.run(host='0.0.0.0', port=5000, threaded=True, debug=True)
- 
+    app.run(host='0.0.0.0', port=5000, threaded=True)
