@@ -127,6 +127,7 @@ def video_feed():
 def pred():
     # Initialize name_ outside the loop
     name_ = None
+    # Make sure the itterations are equal to the number of predictions
     for name, _, _, _ in predictions:
         if name is None:
             name_ = "Tidak Terdeteksi"
