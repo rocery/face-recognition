@@ -1,13 +1,25 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Webcam Stream</title>
-  </head>
-  <body>
-    <button type="button" class="btn btn-primary"><a href="/face_recognition/facerec"><h1>/face_recognition/facerec</h1></a></button>
-    <button type="button" class="btn btn-primary"><a href="/face_recognition/facerec_group"><h1>/face_recognition/facerec_group</h1></a></button>
-    <button type="button" class="btn btn-primary"><a href="/ocr/plat_number"><h1>/ocr/plat_number</h1></a></button>
-  </body>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flask APP | STTB</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+  <div class="d-grid gap-2 col-6 mx-auto mt4-2">
+    <a href="/face_recognition/facerec" class="btn btn-secondary mt-4">Facerec</a>
+    <a href="/face_recognition/facerec_group" class="btn btn-secondary mt-4">Facerec Group</a>
+    <a href="/ocr/plat_number" class="btn btn-secondary mt-4">OCR</a>
+    <a href="/uploads" class="btn btn-secondary mt-4">Upload Gambar</a>
+  </div>
+</body>
+
 </html>
+<!-- Bootstrap JS, Popper.js, and jQuery -->
+<script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.5.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
