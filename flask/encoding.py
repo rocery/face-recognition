@@ -9,6 +9,7 @@ from face_recognition.face_recognition_cli import image_files_in_folder
 import csv
 import time
 import shutil
+from datetime import datetime
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'JPG'}
 
@@ -71,12 +72,12 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
                     print("Image {} not suitable for training: {}".format(img_path, "Didn't find a face" if len(face_bounding_boxes) < 1 else "Found more than one face"))
                     failed_images_counter += 1
                     
-                    shutil.move(img_path, os.path.join("uploads/fail", os.path.basename(img_path)))
-                    
                     with open (csv_fail, mode='a', newline='') as file:
                         writer = csv.writer(file)
-                        writer.writerow([img_counter, class_dir, img_path, "Wajah tidak terdeteksi" if len(face_bounding_boxes) < 1 else "Wajah terdeteksi lebih dari 1"])
-
+                        now = datetime.now()
+                        writer.writerow([img_counter, class_dir, img_path, "Wajah tidak terdeteksi" if len(face_bounding_boxes) < 1 else "Wajah terdeteksi lebih dari 1", now.strftime("%Y-%m-%d %H:%M:%S")])
+                shutil.move(img_path, os.path.join("uploads/fail", os.path.basename(img_path)))
+                
             else:
                 # Add face encoding for current image to the training set
                 X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
@@ -91,7 +92,8 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
                 
                 with open (csv_success, mode='a', newline='') as file:
                     writer = csv.writer(file)
-                    writer.writerow([img_counter, class_dir, img_path])
+                    now = datetime.now()
+                    writer.writerow([img_counter, class_dir, img_path, now.strftime("%Y-%m-%d %H:%M:%S")])
                 
     # Determine how many neighbors to use for weighting in the KNN classifier
     if n_neighbors is None:
@@ -127,15 +129,17 @@ if __name__ == "__main__":
         os.makedirs(fail_folder)
         
     # Membuat CSV jika belum ada
-    if not os.path.exists(csv_success):
+    if os.path.exists(csv_success):
+        os.remove(csv_success)
         with open(csv_success, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['No.', 'Folder', 'File'])
+            writer.writerow(['No.', 'Folder', 'File', 'Time'])
     # Membuat CSV jika belum ada
-    if not os.path.exists(csv_fail):
+    if os.path.exists(csv_fail):
+        os.remove(csv_fail)
         with open(csv_fail, mode='w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(['No.', 'Folder', 'File', 'Information'])
+            writer.writerow(['No.', 'Folder', 'File', 'Information', 'Time'])
     
     print("Training KNN classifier...")
     classifier = train(train_dir = train_folder,
