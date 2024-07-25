@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Images | STTB</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='dataTables/dataTables.bootstrap5.css') }}">
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"> -->
 </head>
 
@@ -25,8 +26,10 @@
                 <label for="images" class="form-label">Pilih Gambar</label>
                 <input type="file" id="images" name="images" class="form-control" aria-label="file example" multiple required>
             </div>
-            <button type="submit" class="btn btn-primary"
-                onclick="return confirm('Apakah Anda yakin ingin submit?')">Submit</button>
+            <div class="d-flex justify-content-center mb-4">
+                <button type="submit" class="btn btn-primary me-2" onclick="return confirm('Apakah Anda yakin ingin submit?')">Submit</button>
+                <a href="/face_recognition/facerec" class="btn btn-secondary">Go to Face Recognition</a>
+            </div>
         </form>
 
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -41,16 +44,24 @@
         </div>
         {% endif %}
         {% endwith %}
-
+        
         <h2 class="mt-5">Daftar Folder dan Jumlah Gambar</h2>
-        <ul class="list-group mt-3">
-            {% for folder_name, image_count in folders_info %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                {{ folder_name }}
-                <span class="badge bg-primary rounded-pill">{{ image_count }}</span>
-            </li>
-            {% endfor %}
-        </ul>
+        <table id="foldersTable" class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Folder Name</th>
+                    <th>Image Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for folder_name, image_count in folders_info %}
+                <tr>
+                    <td>{{ folder_name }}</td>
+                    <td> <span class="badge bg-primary rounded-pill">{{ image_count }}</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     <!-- Bootstrap JS and dependencies -->
 </body>
@@ -58,5 +69,31 @@
 </html>
 <!-- Bootstrap JS, Popper.js, and jQuery -->
 <script src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
-<script src="{{ url_for('static', filename='js/jquery-3.5.1.slim.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery-3.7.1.js') }}"></script>
 <script src="{{ url_for('static', filename='js/popper.min.js') }}"></script>
+<script src="{{ url_for('static', filename='dataTables/dataTables.js') }}"></script>
+<script src="{{ url_for('static', filename='dataTables/dataTables.bootstrap5.js') }}"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#foldersTable').DataTable({
+            layout: {
+                topStart: {
+                    pageLength: {
+                        menu: [ 10, 25, 50, 100 ]
+                    }
+                },
+                topEnd: {
+                    search: {
+                        placeholder: 'Type search here'
+                    }
+                },
+                bottomEnd: {
+                    paging: {
+                        buttons: 4
+                    }
+                }
+            }
+        });
+    });
+</script>

@@ -6,7 +6,7 @@ import face_recognition
 import numpy as np
 import time
 
-def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
+def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.7):
     """
     Recognizes faces in given image using a trained KNN classifier
 

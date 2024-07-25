@@ -2,20 +2,20 @@ import os
 import face_recognition
 from face_recognition.face_recognition_cli import image_files_in_folder
 import time
-import math
 from sklearn import neighbors
 import pickle
+import numpy as np
+import shutil
+import csv
 
-train_folder = "encoding/train"
-model_save_path = "trained_knn_model.clf"
+train_folder = "uploads/train"
+trained_folder = "uploads/trained"
+model_save_path = "static/clf/trained_knn_model.clf"
 n_neighbors_value = 3
+csv_success = 'uploads/success_trained.csv'
+csv_fail = 'uploads/fail_trained.csv'
 
 def train():
-    # Hapus model jika ada
-    if os.path.isfile(model_save_path):
-        os.remove(model_save_path)
-        print('Model sudah ada, dihapus')
-
     # Array untuk menyimpan hasil encodings
     X = []
     # Array untuk menyimpan label/nama
@@ -40,7 +40,6 @@ def train():
 
             # Waktu Mulai Encoding
             start_time_encoding = time.time()
-            # print(os.path.join(train_folder, folder_name, image_path))
 
             # Load metadata gambar
             image_file = face_recognition.load_image_file(image_path)
@@ -51,6 +50,10 @@ def train():
             if len(face_detected) != 1:
                 print("File {} tidak bisa diproses karena wajah {}".format(image_path, "tidak terdeteksi" if len(face_detected) < 1 else "terdeteksi lebih dari 1"))
                 failed_images_counter += 1
+                
+                with open (csv_fail, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([folder_counter, folder_name, image_path, "Wajah tidak terdeteksi" if len(face_detected) < 1 else "Wajah terdeteksi lebih dari 1"])
 
             # Jika wajah = 1
             else:
@@ -69,24 +72,34 @@ def train():
                 # Menyimpan label/nama
                 y.append(folder_name)
 
-                print(f"{folder_counter}. {folder_name}:",
-                      f"File {image_counter}. {image_path} diproses. Waktu Encoding: {time_encoding:.2f} detik")
+                print(f"{folder_counter}. {folder_name}:", 
+                    f"File {image_counter}. {image_path} diproses. Waktu Encoding: {time_encoding:.2f} detik")
+                
+                with open (csv_success, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow([folder_counter, folder_name, image_path])
 
-    # nilai n_neighbor ditentukan dari banyaknya gambar di tiap folder
-    # Jika tiap folder memiliki jumlah ganjil, nilai n_neighbor adalah genap
-    # n_neighbors = 3
-    # n_neighbors = int(round(math.sqrt(len(X))))
-    # if n_neighbors_value is None:
-    #     n_neighbors_value = int(round(math.sqrt(len(X))))
+        # Pindahkan folder yang sudah diproses ke folder trained
+        shutil.move(os.path.join(train_folder, folder_name), os.path.join(trained_folder, folder_name))
+        print(f"Folder {folder_name} telah dipindahkan ke {trained_folder}")
 
-    # Train KNN classifier
-    knn_clf = neighbors.KNeighborsClassifier(n_neighbors = n_neighbors_value, algorithm = 'ball_tree', weights = 'distance')
-    knn_clf.fit(X, y)
+    # Jika model sudah ada, muat model yang ada dan tambahkan data baru
+    if os.path.isfile(model_save_path):
+        with open(model_save_path, 'rb') as f:
+            knn_clf = pickle.load(f)
+        knn_clf._fit_X = np.concatenate((knn_clf._fit_X, X), axis=0)
+        knn_clf._y = np.concatenate((knn_clf._y, y), axis=0)
+        knn_clf.classes_ = np.concatenate((knn_clf.classes_, np.array(y)))
+        print("Model sudah ada, data baru ditambahkan")
+    else:
+        # Train KNN classifier
+        knn_clf = neighbors.KNeighborsClassifier(n_neighbors=n_neighbors_value, algorithm='ball_tree', weights='distance')
+        knn_clf.fit(X, y)
+        print("Model baru dibuat dan dilatih")
 
     # Save trained KNN classifier
-    if model_save_path is not None:
-        with open(model_save_path, 'wb') as f:
-            pickle.dump(knn_clf, f)
+    with open(model_save_path, 'wb') as f:
+        pickle.dump(knn_clf, f)
 
     print(f"Folder diproses: {folder_counter}")
     print(f"Gambar diproses: {image_counter}")
@@ -96,6 +109,21 @@ def train():
     print(f"Gambar yang gagal diproses: {failed_images_counter}")
 
     return knn_clf
-    
+
 if __name__ == "__main__":
+    # Membuat folder trained jika belum ada
+    if not os.path.exists(trained_folder):
+        os.makedirs(trained_folder)
+    
+    # Membuat CSV jika belum ada
+    if not os.path.exists(csv_success):
+        with open(csv_success, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['No.', 'Folder', 'File'])
+    # Membuat CSV jika belum ada
+    if not os.path.exists(csv_fail):
+        with open(csv_fail, mode='w', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(['No.', 'Folder', 'File', 'Information'])
+            
     train()

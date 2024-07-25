@@ -9,7 +9,7 @@ import time
 
 app = Flask(__name__)
 app.secret_key = 'itbekasioke'  # Necessary for using flash messages
-app.config['UPLOAD_FOLDER'] = 'uploads/'
+app.config['UPLOAD_FOLDER'] = 'uploads/train'
 
 # Path to the CSV file
 CSV_FILE_PATH = 'static/data/data.csv'
@@ -64,9 +64,10 @@ def submit_facerec():
         name_input = request.form.get('name_input')
         time_str = time.strftime("%d-%m-%Y %H:%M:%S", time.localtime())
         
-        if name_input in ['-', '', 'Tidak Dikenali', 'Tidak Terdeteksi', 'Palsu', 'Terdeteksi Lebih dari Satu Wajah']:
+        if name_input in ['-', '', 'Tidak Dikenali', 'Tidak Terdeteksi', 'Palsu', 'Terdeteksi Lebih dari Satu Wajah'] or 'Palsu' in name_input:
             flash(f"Data terdeteksi salah, silahkan ulangi proses Face Recognition. Nama: {name_input}")
-            return redirect(url_for('facerec'))           
+            return redirect(url_for('facerec'))
+            
         else:
             # Save data to CSV
             with open(CSV_FILE_PATH, mode='a', newline='') as file:
@@ -118,7 +119,7 @@ def generate_frames():
 
             # Hasilkan frame sebagai aliran byte
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 @app.route('/video_feed')
 def video_feed():

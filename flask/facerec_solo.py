@@ -54,6 +54,17 @@ def liveness_check(frame, model_dir, device_id):
     return test_result
 
 def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
+    """
+    Recognizes faces in given image using a trained KNN classifier
+
+    :param X_frame: frame to do the prediction on.
+    :param knn_clf: (optional) a knn classifier object. if not specified, model_save_path must be specified.
+    :param model_path: (optional) path to a pickled knn classifier. if not specified, model_save_path must be knn_clf.
+    :param distance_threshold: (optional) distance threshold for face classification. the larger it is, the more chance
+           of mis-classifying an unknown person as a known one.
+    :return: a list of names and face locations for the recognized faces in the image: [(name, bounding box), ...].
+        For faces of unrecognized persons, the name 'unknown' will be returned.
+    """
     if knn_clf is None and model_path is None:
         raise Exception("File Encoding Tidak Ditemukan")
     
@@ -89,27 +100,36 @@ def predict(X_frame, knn_clf=None, model_path=None, distance_threshold=0.5):
         X_face_locations.append(data[2])
         
     face_encodings = face_recognition.face_encodings(X_frame, known_face_locations = X_face_locations)
-    closest_distances = knn_clf.kneighbors(face_encodings, n_neighbors = 3)
+    closest_distances = knn_clf.kneighbors(face_encodings, n_neighbors = 1)
     are_matches = [closest_distances[0][i][0] <= distance_threshold for i in range(len(face_encodings))]
 
     for pred, loc, rec, label, value in zip(knn_clf.predict(face_encodings), X_face_locations, are_matches, X_label, X_value):
         if rec and label == 1:
             predictions.append((pred, loc, label, value))
-        elif rec == False and label == 1 or label == 2:
-            predictions.append(("Palsu", loc, label, value))
-        elif rec and label == 1 or label == 2:
+        # elif rec and label == 0 or label == 2:
+        #     pred_ = "{}, Palsu".format(pred)
+        #     predictions.append((pred_, loc, label, value))
+        # elif rec == False and label == 0 or label == 2:
+        #     predictions.append(("Palsu", loc, label, value))
+        elif rec and label != 1:
             pred_ = "{}, Palsu".format(pred)
+            predictions.append((pred_, loc, label, value))
+        elif label != 1:
             predictions.append(("Palsu", loc, label, value))
         else:
             predictions.append(("Tidak Dikenali", loc, label, value))
-    
+            
+    #     if rec:
+    #         predictions.append((pred, loc, label, value))
+    #     else:
+    #         predictions.append(("Tidak Dikenali", loc, label, value))
+    print(pred)
     return predictions
 
 def show_labels_on_image(frame, predictions):
     pil_image = Image.fromarray(frame)
     draw = ImageDraw.Draw(pil_image)
     font = ImageFont.truetype("static/font/Ubuntu.ttf", 14)
-    print(predictions)
     
     time_str = time.strftime("%A, %d-%m-%Y %H:%M:%S", time.localtime())
     draw.text((10, 5), time_str, fill = (0, 0, 0), font = font)
@@ -121,16 +141,16 @@ def show_labels_on_image(frame, predictions):
         left *= 2
         
         if label == 1:
-            fig_outline = (200, 0, 0)
+            fig_outline = (200, 10, 10)
         else:
-            fig_outline = (0, 0, 200)
+            fig_outline = (10, 10, 200)
         
         fig_label = "{}, Value: {:.2f}".format(name, value)
         draw.rectangle(((left, top), (right, bottom)), outline = fig_outline, width = 3)
         
         # Draw a solid rectangle below the rectangle, fill it with name
         # draw.rectangle(((left, top - 20), (right, top)), fill = fig_outline, outline = fig_outline)
-        draw.text((left + 5, top - 15), fig_label, fill = fig_outline, font = font)
+        draw.text((left, top - 15), fig_label, fill = fig_outline, font = font)
         
     del draw
     
