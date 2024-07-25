@@ -76,7 +76,7 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
                         writer = csv.writer(file)
                         now = datetime.now()
                         writer.writerow([img_counter, class_dir, img_path, "Wajah tidak terdeteksi" if len(face_bounding_boxes) < 1 else "Wajah terdeteksi lebih dari 1", now.strftime("%Y-%m-%d %H:%M:%S")])
-                shutil.move(img_path, os.path.join("uploads/fail", os.path.basename(img_path)))
+                shutil.move(img_path, os.path.join(fail_folder, os.path.basename(img_path)))
                 
             else:
                 # Add face encoding for current image to the training set

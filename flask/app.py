@@ -158,7 +158,11 @@ def uploads():
         if not name or not id or not images:
             flash('Semua field harus diisi', 'danger')
             return redirect(request.url)
-
+        
+        if not "".join(name.split()).isalpha():
+            flash('Nama harus berupa huruf alfabet', 'danger')
+            return redirect(request.url)
+        
         if not id.isdigit():
             flash('ID harus berupa angka', 'danger')
             return redirect(request.url)
