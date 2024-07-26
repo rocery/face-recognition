@@ -60,11 +60,10 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
         folder_counter += 1
         # Loop through each training image for the current person
         for img_path in image_files_in_folder(os.path.join(train_dir, class_dir)):
+            start_time_encoding = time.time()
             image = face_recognition.load_image_file(img_path)
             face_bounding_boxes = face_recognition.face_locations(image)
             img_counter += 1
-            
-            start_time_encoding = time.time()
             
             if len(face_bounding_boxes) != 1:
                 # If there are no people (or too many people) in a training image, skip the image.
@@ -83,17 +82,17 @@ def train(train_dir, model_save_path=None, n_neighbors=None, knn_algo='ball_tree
                 X.append(face_recognition.face_encodings(image, known_face_locations=face_bounding_boxes)[0])
                 y.append(class_dir)
                 
+                with open (csv_success, mode='a', newline='') as file:
+                    writer = csv.writer(file)
+                    now = datetime.now()
+                    writer.writerow([img_counter, class_dir, img_path, now.strftime("%Y-%m-%d %H:%M:%S")])
+                
                 end_time_encoding = time.time()
                 time_encoding = end_time_encoding - start_time_encoding
                 total_time_encoding += time_encoding
                 
                 print(f"{folder_counter}. {class_dir}:", 
                     f"File {img_counter}. {img_path} diproses. Waktu Encoding: {time_encoding:.2f} detik")
-                
-                with open (csv_success, mode='a', newline='') as file:
-                    writer = csv.writer(file)
-                    now = datetime.now()
-                    writer.writerow([img_counter, class_dir, img_path, now.strftime("%Y-%m-%d %H:%M:%S")])
                 
     # Determine how many neighbors to use for weighting in the KNN classifier
     if n_neighbors is None:
