@@ -13,7 +13,7 @@ from datetime import datetime
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'JPG'}
 
-train_folder = "uploads/train"
+train_folder = "uploads/image_peg"
 fail_folder = "uploads/fail"
 model_save_path = "static/clf/trained_knn_model.clf"
 csv_success = 'uploads/success_trained.csv'
