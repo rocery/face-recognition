@@ -47,6 +47,11 @@ def facerec():
     data_csv = read_csv(CSV_FILE_PATH)
     return render_template('face_recognition/facerec.html', data_csv=data_csv)
 
+@app.route('/face_recognition/facerec_')
+def facerec_():
+    data_csv = read_csv(CSV_FILE_PATH)
+    return render_template('face_recognition/facerec_.html', data_csv=data_csv)
+
 @app.route('/face_recognition/facerec_group')
 def facerec_group():
     with open(CSV_FILE_PATH_GROUP, 'r') as file:
@@ -79,6 +84,30 @@ def submit_facerec():
     else:
         flash("Error, data terdeteksi tidak ada, silahkan ulangi proses Face Recognition")
         return redirect(url_for('facerec'))
+
+@app.route('/submit_facerec_', methods=['POST'])
+def submit_facerec_():
+    if request.method == 'POST':
+        # Get data from the form
+        time_category = request.form.get('time_category')
+        name_input = request.form.get('name_input')
+        time_str = time.strftime("%d-%m-%Y %H:%M:%S", time.localtime())
+        
+        if name_input in ['-', '', 'Tidak Dikenali', 'Tidak Terdeteksi', 'Palsu', 'Terdeteksi Lebih dari Satu Wajah'] or 'Palsu' in name_input:
+            flash(f"Data terdeteksi salah, silahkan ulangi proses Face Recognition. Nama: {name_input}")
+            return redirect(url_for('facerec_'))
+            
+        else:
+            # Save data to CSV
+            with open(CSV_FILE_PATH, mode='a', newline='') as file:
+                writer = csv.writer(file)
+                writer.writerow([name_input, time_category, time_str])
+            flash(f"Berhasil! Nama: {name_input}, Kategori: {time_category}, Waktu: {time_str}")
+            return redirect(url_for('facerec_'))
+        
+    else:
+        flash("Error, data terdeteksi tidak ada, silahkan ulangi proses Face Recognition")
+        return redirect(url_for('facerec_'))
 
 @app.route('/group_submit_facerec', methods=['POST'])
 def group_submit_facerec():
