@@ -11,19 +11,25 @@ config = {
     'raise_on_warnings': True
 }
 
+def
+
 try:
     # Establish connection to MySQL server
     cnx = mysql.connector.connect(**config)
 
     # Create cursor object
     cursor = cnx.cursor()
+    id  =  1
+    nip = 2
+    name = 'Sastra'
+    category = 'IN'
+    date = '2023-05-01 10:00:00'
 
     # Example complex SQL query with multiple WHERE conditions
     query = (
-        "SELECT id_packing, jenis_packing, id_bagian "
-        "FROM jenis_packing "
-        "WHERE id_bagian > 3"
-    )
+            "INSET INTO `presensi` (`id`, `nip`, `name`, `category`, `date`) "
+            "VALUES (id, nip, name, category, date) "
+        )
 
     # Execute SQL query
     cursor.execute(query)
