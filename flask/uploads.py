@@ -5,7 +5,7 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in {'jpg', 'jpeg', 'png'}
 
 def format_name(name):
-    return ' '.join([word.upper() for word in name.split()])
+    return ' '.join([word.capitalize() for word in name.split()])
 
 def save_image(images, folder_path, quality=30, compress_level=3):
     if not os.path.exists(folder_path):
