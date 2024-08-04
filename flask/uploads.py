@@ -7,7 +7,7 @@ def allowed_file(filename):
 def format_name(name):
     return ' '.join([word.capitalize() for word in name.split()])
 
-def save_image(images, folder_path, quality=30, compress_level=3):
+def save_image(images, folder_path, quality=40, compress_level=4):
     if not os.path.exists(folder_path):
         os.makedirs(folder_path)
     

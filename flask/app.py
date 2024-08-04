@@ -203,7 +203,7 @@ def uploads():
                 return redirect(request.url)
 
         formatted_name = format_name(name)
-        folder_name = f"{id}_{formatted_name}"
+        folder_name = f"{formatted_name}_{id}"
         folder_path = os.path.join(app.config['UPLOAD_FOLDER'], folder_name)
         
         save_image(images, folder_path)
