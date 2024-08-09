@@ -15,7 +15,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'JPG'}
 
 train_folder = "flask/uploads/train"
 fail_folder = "flask/uploads/fail"
-model_save_path = "flask/static/clf/trained_knn_model_.clf"
+model_save_path = "flask/static/clf/trained_knn_model.clf"
 csv_success = "flask/uploads/success_trained.csv"
 csv_fail = "flask/uploads/fail_trained.csv"
 
