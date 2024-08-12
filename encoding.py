@@ -13,7 +13,7 @@ from datetime import datetime
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'JPG'}
 
-train_folder = "flask/uploads/train"
+train_folder = "flask/uploads/trains"
 fail_folder = "flask/uploads/fail"
 model_save_path = "flask/static/clf/trained_knn_model.clf"
 csv_success = "flask/uploads/success_trained.csv"
