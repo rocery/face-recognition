@@ -29,18 +29,10 @@ cd face_recognition
 edit setup.py -> comment dlib, face_recognition_models, and numpy
 python3 setup.py install
 ```
-
-
 Please make your own venv,
 
-in ubuntu update or isntall lib using this command:
+in ubuntu update or install lib using this command:
 pip install --break-system-packages --user <package name>
-
-Future Project:
-
-1. Face Recognition
-2. Live OCR
-3. Counter -> YOLO
 
 python 3.10.12
 cmake
